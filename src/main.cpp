@@ -1,11 +1,11 @@
 #include "main.h"
 #include "widgets/mainframe.h"
 
-IMPLEMENT_APP(MyApp)
+IMPLEMENT_APP(App)
 
-bool MyApp::OnInit()
+bool App::OnInit()
 {
-    MainFrame *mainFrame = new MainFrame(wxT("My App"));
+    MainFrame *mainFrame = new MainFrame(wxT("Tagger"));
     mainFrame->Show(true);
 
     return true;
