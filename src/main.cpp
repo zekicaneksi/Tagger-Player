@@ -1,12 +1,12 @@
 #include "main.h"
-#include "widgets/listbox.h"
+#include "widgets/mainframe.h"
 
 IMPLEMENT_APP(MyApp)
 
 bool MyApp::OnInit()
 {
-    Listbox *listbox = new Listbox(wxT("Listbox"));
-    listbox->Show(true);
+    MainFrame *mainFrame = new MainFrame(wxT("My App"));
+    mainFrame->Show(true);
 
     return true;
 }
