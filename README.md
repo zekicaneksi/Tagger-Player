@@ -1,7 +1,9 @@
 # Hello
 
+
+Nix
 ```sh
-nix-shell -p gnumake -p wxGTK32
+nix-shell
 ```
 
 Build
