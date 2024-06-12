@@ -12,7 +12,7 @@ bool App::OnInit()
         if (dirDialog.ShowModal() == wxID_CANCEL)
         return false;
 
-        logic::dirPath = dirDialog.GetPath();
+        logic::dirPath = dirDialog.GetPath().ToStdWstring();
 
     MainFrame *mainFrame = new MainFrame(wxT("Tagger"));
     mainFrame->Show(true);

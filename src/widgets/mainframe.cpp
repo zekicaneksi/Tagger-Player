@@ -15,7 +15,7 @@ MainFrame::MainFrame(const wxString& title)
   listbox = new wxListBox(panel, ID_LISTBOX, 
       wxPoint(-1, -1), wxSize(-1, -1));
 
-    std::vector<std::string> files = logic::GetFiles();
+    std::vector<std::wstring> files = logic::GetFiles();
     for (int i = 0; i < files.size(); i++) {
         listbox->Append(files[i]);
     }

@@ -4,7 +4,7 @@
 
 namespace logic
 {
-extern std::string dirPath;
+extern std::wstring dirPath;
 
-std::vector<std::string> GetFiles();
+std::vector<std::wstring> GetFiles();
 }
