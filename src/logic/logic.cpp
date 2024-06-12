@@ -14,7 +14,7 @@ std::vector<std::wstring> GetFiles(){
     std::vector<std::wstring> files;
 
     for (const fs::directory_entry & entry : fs::directory_iterator(dirPath))
-        files.push_back(entry.path().wstring());
+        files.push_back(entry.path().filename().wstring());
 
     return files;
 }
