@@ -1,8 +1,8 @@
 { pkgs ? import <nixpkgs> { config.allowUnfree = true; } }:
 pkgs.mkShell {
   buildInputs = with pkgs; [
-        wxGTK32
-        gnumake
+    wxGTK32
+    gnumake
 	gtk3
 	sqlite
   ];

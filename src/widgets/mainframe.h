@@ -1,12 +1,11 @@
-#include <wx/wx.h>
 #include <wx/listbox.h>
+#include <wx/wx.h>
 
-class MainFrame : public wxFrame
-{
+class MainFrame : public wxFrame {
 public:
-    MainFrame(const wxString& title);
+  MainFrame(const wxString &title);
 
-    wxListBox *listbox;
+  wxListBox *listbox;
 };
 
 const int ID_LISTBOX = 5;
