@@ -4,6 +4,7 @@ pkgs.mkShell {
         wxGTK32
         gnumake
 	gtk3
+	sqlite
   ];
   shellHook = ''
      export XDG_DATA_DIRS=$GSETTINGS_SCHEMAS_PATH

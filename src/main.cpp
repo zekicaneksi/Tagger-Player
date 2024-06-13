@@ -12,7 +12,12 @@ bool App::OnInit()
         if (dirDialog.ShowModal() == wxID_CANCEL)
         return false;
 
-        logic::dirPath = dirDialog.GetPath().ToStdWstring();
+        logic::dirPath = dirDialog.GetPath().utf8_str();
+
+        if (logic::initDB() != 0) {
+            wxMessageBox(wxT("Error initializing db, check console output"));
+            return false;
+        }
 
     MainFrame *mainFrame = new MainFrame(wxT("Tagger"));
     mainFrame->Show(true);
