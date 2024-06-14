@@ -18,6 +18,10 @@ bool App::OnInit() {
     wxMessageBox(wxT("Error initializing db, check console output"));
     return false;
   }
+  if (logic::updateFiles() != 0){
+    wxMessageBox(wxT("Error updating the files, check console output"));
+      return false;
+  }
 
   MainFrame *mainFrame = new MainFrame(wxT("Tagger"));
   mainFrame->Show(true);

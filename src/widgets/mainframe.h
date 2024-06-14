@@ -1,11 +1,14 @@
-#include <wx/listbox.h>
+#ifndef MAINFRAME_H
+#define MAINFRAME_H
+
+#include "FileListBox.h"
 #include <wx/wx.h>
 
 class MainFrame : public wxFrame {
 public:
   MainFrame(const wxString &title);
 
-  wxListBox *listbox;
+  FileListBox *listBox;
 };
 
-const int ID_LISTBOX = 5;
+#endif
