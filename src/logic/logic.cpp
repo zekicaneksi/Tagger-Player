@@ -5,9 +5,28 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <sstream>
 namespace fs = std::filesystem;
 
 namespace logic {
+
+// -- Utility Functions --
+
+// Generates Question marks in this way "?,?,?" to be used with queries.
+std::string generateQuestionMarks(int amount) {
+
+      std::ostringstream stream_parameterQuestionMarks;
+    for (int i = 0; i < amount; i++) {
+        stream_parameterQuestionMarks << "?,";
+    }
+std::string parameterQuestionMarks = stream_parameterQuestionMarks.str();
+      parameterQuestionMarks.pop_back();
+    
+      return parameterQuestionMarks;
+       
+}
+
+// -- Utility Functions End --
 
 const std::string dbName = ".tagger.db";
 
@@ -93,12 +112,49 @@ WHERE existing_files.name IS NULL;
                        &stmt, nullptr);
     sqlite3_bind_text(stmt, 1, files[i].c_str(), files[i].length(),
                       SQLITE_STATIC);
-    int errCode = sqlite3_step(stmt);
-    if (errCode != 0 && errCode != 101) {
-      std::cerr << "Insert into db failed, error code: " << errCode
+    int resultCode = sqlite3_step(stmt);
+    if (resultCode != 0 && resultCode != 101) {
+      std::cerr << "Insert into db failed, last result code: " << resultCode
                 << std::endl;
       return 1;
     }
+  }
+
+  // -- Remove the files from database that don't exist in the directory anymore --
+  //
+  std::vector<File> filesInDB = GetFiles();
+
+  // Remove elements from "filesInDB" that also exist in "files"
+  for (int i = 0; i < files.size(); i++) {
+      for (int y = 0; y < filesInDB.size(); y++){
+        if(files[i] == filesInDB[y].name) {
+            filesInDB.erase(filesInDB.begin() + y);
+            break;
+        }
+      }
+  }
+
+  // Because of query limit restirictions, the records are deleted in bulks
+  const int bulkSize = 50;
+  for (int i = 0; i < filesInDB.size(); i += bulkSize){
+
+    const std::string sqlDeleteQuery = "DELETE FROM file WHERE id IN ("+ generateQuestionMarks(filesInDB.size() - i >= bulkSize ? bulkSize : filesInDB.size() - i) +");";
+
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(db, sqlDeleteQuery.c_str(), sqlDeleteQuery.length(),
+                       &stmt, nullptr);
+    for (int y = 0; (y < filesInDB.size() - i && y < bulkSize); y++) {
+        sqlite3_bind_int(stmt, y + 1, filesInDB[i+y].id);
+    }
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != 101) {
+      std::cerr << "Removing unexistent files from db failed, last result code: " << rc << std::endl;
+      return 1;
+    }
+
   }
 
   return 0;
