@@ -12,12 +12,27 @@ namespace logic {
 
 // -- Utility Functions --
 
-// Generates Question marks in this way "?,?,?" to be used with queries.
-std::string generateQuestionMarks(int amount) {
+// Generates Question marks to be used with queries.
+enum questionMarkType {
+    normal, // ?,?,?
+    withParenthesis // (?),(?),(?)
+};
+
+std::string generateQuestionMarks(int amount, questionMarkType type) {
+
+    std::string questionMarkToInsert;
+    switch(type){
+        case 0:
+            questionMarkToInsert = "?,";
+            break;
+        case 1:
+            questionMarkToInsert = "(?),";
+            break;
+    }
 
       std::ostringstream stream_parameterQuestionMarks;
     for (int i = 0; i < amount; i++) {
-        stream_parameterQuestionMarks << "?,";
+        stream_parameterQuestionMarks << questionMarkToInsert;
     }
 std::string parameterQuestionMarks = stream_parameterQuestionMarks.str();
       parameterQuestionMarks.pop_back();
@@ -96,23 +111,30 @@ int updateFiles() {
     files.push_back(filename);
   }
 
-  // Insert all files into database
-  // Basically, insert if not exists.
-  const std::string sqlInsertQuery = R"(
+  // -- Insert all files in directory into database --
+  //
+  // Because of query limit restirictions, the records are inserted in bulks
+  const int bulkSizeInsert = 25;
+  for (int i = 0; i < files.size(); i += bulkSizeInsert){
+  // The query basically is insert if not exists.
+  const std::string sqlInsertQuery = std::string(R"(
+WITH new_files (name) AS (VALUES )") + generateQuestionMarks(files.size() - i >= bulkSizeInsert ? bulkSizeInsert : files.size() - i, questionMarkType::withParenthesis) + std::string(R"()
 INSERT INTO file (name)
-SELECT new_files.name
-FROM (SELECT ? AS name) AS new_files
+SELECT new_files.name FROM new_files
 LEFT OUTER JOIN file existing_files
 ON new_files.name = existing_files.name
 WHERE existing_files.name IS NULL;
-        )";
-  for (int i = 0; i < files.size(); i++) {
+)");
+
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(db, sqlInsertQuery.c_str(), sqlInsertQuery.length(),
                        &stmt, nullptr);
-    sqlite3_bind_text(stmt, 1, files[i].c_str(), files[i].length(),
-                      SQLITE_STATIC);
+    for (int y = 0; (y < files.size() - i && y < bulkSizeInsert); y++) {
+        sqlite3_bind_text(stmt, y + 1, files[i+y].c_str(), files[i+y].length(), SQLITE_STATIC);
+    }
+
     int resultCode = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
     if (resultCode != 0 && resultCode != 101) {
       std::cerr << "Insert into db failed, last result code: " << resultCode
                 << std::endl;
@@ -135,15 +157,15 @@ WHERE existing_files.name IS NULL;
   }
 
   // Because of query limit restirictions, the records are deleted in bulks
-  const int bulkSize = 50;
-  for (int i = 0; i < filesInDB.size(); i += bulkSize){
+  const int bulkSizeDelete = 50;
+  for (int i = 0; i < filesInDB.size(); i += bulkSizeDelete){
 
-    const std::string sqlDeleteQuery = "DELETE FROM file WHERE id IN ("+ generateQuestionMarks(filesInDB.size() - i >= bulkSize ? bulkSize : filesInDB.size() - i) +");";
+    const std::string sqlDeleteQuery = "DELETE FROM file WHERE id IN ("+ generateQuestionMarks(filesInDB.size() - i >= bulkSizeDelete ? bulkSizeDelete : filesInDB.size() - i, questionMarkType::normal) +");";
 
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(db, sqlDeleteQuery.c_str(), sqlDeleteQuery.length(),
                        &stmt, nullptr);
-    for (int y = 0; (y < filesInDB.size() - i && y < bulkSize); y++) {
+    for (int y = 0; (y < filesInDB.size() - i && y < bulkSizeDelete); y++) {
         sqlite3_bind_int(stmt, y + 1, filesInDB[i+y].id);
     }
 
