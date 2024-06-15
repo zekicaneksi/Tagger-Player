@@ -13,9 +13,17 @@ struct File {
   std::string name;
 };
 
+struct Tag {
+  int id;
+  std::string name;
+};
+
 int initDB();
 int updateFiles();
+int createTag(std::string tagName);
+
 std::vector<File> GetFiles();
+std::vector<Tag> GetTags();
 } // namespace logic
 
 #endif

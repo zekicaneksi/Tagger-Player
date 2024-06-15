@@ -75,7 +75,7 @@ int initDB() {
             name varchar(255) UNIQUE NOT NULL
         );
         CREATE TABLE IF NOT EXISTS tag (
-            id INTEGET PRIMARY KEY NOT NULL,
+            id INTEGER PRIMARY KEY NOT NULL,
             name varchar(255) UNIQUE NOT NULL
         );
         CREATE TABLE IF NOT EXISTS file_tag (
@@ -196,6 +196,26 @@ WHERE existing_files.name IS NULL;
   return 0;
 }
 
+int createTag(std::string tagName) {
+  const std::string sqlInsertQuery = "INSERT INTO tag (name) VALUES (?);";
+
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(db, sqlInsertQuery.c_str(), sqlInsertQuery.length(), &stmt,
+                     nullptr);
+  sqlite3_bind_text(stmt, 1, tagName.c_str(), tagName.length(), SQLITE_STATIC);
+
+  int rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  if (rc != 101) {
+    std::cerr << "Inserting tag into db failed, last result code: " << rc
+              << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
 int GetFilesCallback(void *Used, int argc, char **argv, char **azColName) {
 
   std::vector<File> *fileArr = (std::vector<File> *)Used;
@@ -228,6 +248,40 @@ std::vector<File> GetFiles() {
   }
 
   return files;
+}
+
+int GetTagsCallback(void *Used, int argc, char **argv, char **azColName) {
+
+  std::vector<Tag> *tagArr = (std::vector<Tag> *)Used;
+
+  Tag tagToPush = {
+      std::stoi(argv[0]),
+      argv[1],
+  };
+
+  tagArr->push_back(tagToPush);
+
+  return 0;
+}
+
+std::vector<Tag> GetTags() {
+  // Used for Database Operation Result
+  int rc;
+  char *zErrMsg = 0;
+
+  std::vector<Tag> tags;
+
+  // Get tags
+  const std::string query_getTags = "SELECT * FROM tag";
+  rc =
+      sqlite3_exec(db, query_getTags.c_str(), GetTagsCallback, &tags, &zErrMsg);
+  if (rc != SQLITE_OK) {
+    std::cerr << "SQL error: " + std::string(zErrMsg) << std::endl;
+    sqlite3_free(zErrMsg);
+    throw "cannot get tags from database";
+  }
+
+  return tags;
 }
 
 } // namespace logic
