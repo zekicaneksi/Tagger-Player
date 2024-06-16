@@ -17,13 +17,12 @@ void FileListBox::OnDblClick(wxCommandEvent &event) {
   }
 }
 
-FileListBox::FileListBox(wxWindow *parent)
+FileListBox::FileListBox(wxWindow *parent, std::vector<logic::File> *files)
     : wxListBox(parent, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1)) {
 
-  std::vector<logic::File> files = logic::GetFiles();
-  for (int i = 0; i < files.size(); i++) {
-    this->Append(wxString::FromUTF8(files[i].name),
-                 new FileClientData(files[i]));
+  for (int i = 0; i < files->size(); i++) {
+    this->Append(wxString::FromUTF8((*files)[i].name),
+                 new FileClientData((*files)[i]));
   }
 
   Connect(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED,

@@ -6,7 +6,7 @@
 
 class FileListBox : public wxListBox {
 public:
-  FileListBox(wxWindow *parent);
+  FileListBox(wxWindow *parent, std::vector<logic::File> *files);
 
   void OnDblClick(wxCommandEvent &event);
 };
