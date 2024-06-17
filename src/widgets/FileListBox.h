@@ -6,16 +6,17 @@
 
 class FileListBox : public wxListBox {
 public:
-  FileListBox(wxWindow *parent, std::vector<logic::File> *files);
+  std::vector<logic::File> *files;
 
-  void OnDblClick(wxCommandEvent &event);
+  FileListBox(wxWindow *parent, std::vector<logic::File> *files_arg,
+              wxWindowID windowID);
 };
 
 class FileClientData : public wxClientData {
 public:
-  FileClientData(logic::File file_arg);
+  FileClientData(int file_id_arg);
 
-  logic::File file;
+  int file_id;
 };
 
 #endif

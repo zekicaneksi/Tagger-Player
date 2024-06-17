@@ -6,14 +6,17 @@
 
 class TagListBox : public wxListBox {
 public:
-  TagListBox(wxWindow *parent);
+  std::vector<logic::Tag> *tags;
+
+  TagListBox(wxWindow *parent, std::vector<logic::Tag> *tags_arg,
+             wxWindowID windowID);
 };
 
 class TagClientData : public wxClientData {
 public:
-  TagClientData(logic::Tag tag_arg);
+  TagClientData(int tag_id_arg);
 
-  logic::Tag tag;
+  int tag_id;
 };
 
 #endif

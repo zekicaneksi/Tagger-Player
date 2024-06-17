@@ -197,7 +197,8 @@ WHERE existing_files.name IS NULL;
 }
 
 int createTag(std::string tagName) {
-  const std::string sqlInsertQuery = "INSERT INTO tag (name) VALUES (?);";
+  const std::string sqlInsertQuery =
+      "INSERT INTO tag (name) VALUES (?) RETURNING id;";
 
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(db, sqlInsertQuery.c_str(), sqlInsertQuery.length(), &stmt,
@@ -205,27 +206,37 @@ int createTag(std::string tagName) {
   sqlite3_bind_text(stmt, 1, tagName.c_str(), tagName.length(), SQLITE_STATIC);
 
   int rc = sqlite3_step(stmt);
+  int insertedId = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  if (rc != 101) {
+  if (rc != 100) {
     std::cerr << "Inserting tag into db failed, last result code: " << rc
               << std::endl;
-    return 1;
+    return -1;
   }
 
-  return 0;
+  return insertedId;
 }
 
 int GetFilesCallback(void *Used, int argc, char **argv, char **azColName) {
 
   std::vector<File> *fileArr = (std::vector<File> *)Used;
 
-  File fileToPush = {
-      std::stoi(argv[0]),
-      argv[1],
-  };
+  int fileId = std::stoi(argv[0]);
 
-  fileArr->push_back(fileToPush);
+  if (fileArr->size() != 0 && fileArr->back().id == fileId) {
+    (*fileArr)[fileArr->size() - 1].tag_ids.push_back(std::stoi(argv[2]));
+  } else {
+    File fileToPush = {
+        std::stoi(argv[0]),
+        argv[1],
+    };
+
+    if (argv[2])
+      fileToPush.tag_ids.push_back(std::stoi(argv[2]));
+
+    fileArr->push_back(fileToPush);
+  }
 
   return 0;
 }
@@ -236,9 +247,12 @@ std::vector<File> GetFiles() {
   char *zErrMsg = 0;
 
   std::vector<File> files;
-
   // Get files
-  const std::string query_getFiles = "SELECT * FROM file";
+  const std::string query_getFiles = R"(
+  SELECT id as file_id, name, tag_id FROM file
+LEFT JOIN file_tag ON file.id = file_tag.file_id ORDER BY file_id
+  )";
+
   rc = sqlite3_exec(db, query_getFiles.c_str(), GetFilesCallback, &files,
                     &zErrMsg);
   if (rc != SQLITE_OK) {
@@ -282,6 +296,50 @@ std::vector<Tag> GetTags() {
   }
 
   return tags;
+}
+
+int attachTag(int fileId, int tagId) {
+  const std::string sqlInsertQuery =
+      "INSERT INTO file_tag (file_id, tag_id) VALUES (?,?);";
+
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(db, sqlInsertQuery.c_str(), sqlInsertQuery.length(), &stmt,
+                     nullptr);
+  sqlite3_bind_int(stmt, 1, fileId);
+  sqlite3_bind_int(stmt, 2, tagId);
+
+  int rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  if (rc != 101) {
+    std::cerr << "Inserting file_tag into db failed, last result code: " << rc
+              << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
+int detachTag(int fileId, int tagId) {
+  const std::string sqlDeleteQuery =
+      "DELETE FROM file_tag WHERE file_id = ? AND tag_id = ?;";
+
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(db, sqlDeleteQuery.c_str(), sqlDeleteQuery.length(), &stmt,
+                     nullptr);
+  sqlite3_bind_int(stmt, 1, fileId);
+  sqlite3_bind_int(stmt, 2, tagId);
+
+  int rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  if (rc != 101) {
+    std::cerr << "Deleting from file_tag from db failed, last result code: "
+              << rc << std::endl;
+    return 1;
+  }
+
+  return 0;
 }
 
 } // namespace logic

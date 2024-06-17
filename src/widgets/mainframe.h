@@ -7,22 +7,40 @@
 
 class MainFrame : public wxFrame {
 public:
-  MainFrame(const wxString &title);
+  MainFrame(const wxString &title, wxSize minAndInitialSize);
 
   std::vector<logic::File> files;
+  std::vector<logic::Tag> tags;
 
   FileListBox *fileListBox;
   TagListBox *tagListBox;
+  wxListBox *attachedTagsListBox;
+  wxListBox *unattachedTagsListBox;
 
-  wxButton *createTagBtn;
   wxTextCtrl *fileFilterCtrl;
 
-  void CreateTagBtn(wxCommandEvent &event);
+  wxButton *createTagBtn;
+  wxButton *attachTagBtn;
+  wxButton *detachTagBtn;
+
   void FileFilterOnTextChange(wxCommandEvent &event);
+  void ListBoxChange_State_DetachBtn(wxCommandEvent &event);
+  void ListBoxChange_State_AttachBtn(wxCommandEvent &event);
+  void FileListBoxChange(wxCommandEvent &event);
+
+  void CreateTagBtn(wxCommandEvent &event);
+  void AttachTagBtn(wxCommandEvent &event);
+  void DetachTagBtn(wxCommandEvent &event);
 };
 
 // Window Ids
 const int CREATE_TAG_BTN = 1;
-const int FILE_FILTER_CTRL = 2;
+const int ATTACH_TAG_BTN = 2;
+const int FILE_FILTER_CTRL = 3;
+const int FILE_LISTBOX = 4;
+const int TAG_LISTBOX = 5;
+const int ATTACHED_TAGS_LISTBOX = 6;
+const int UNATTACHED_TAGS_LISTBOX = 7;
+const int DETACH_TAG_BTN = 8;
 
 #endif

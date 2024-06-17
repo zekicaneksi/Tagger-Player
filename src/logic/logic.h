@@ -11,6 +11,7 @@ extern std::string dirPath;
 struct File {
   int id;
   std::string name;
+  std::vector<int> tag_ids;
 };
 
 struct Tag {
@@ -20,10 +21,13 @@ struct Tag {
 
 int initDB();
 int updateFiles();
-int createTag(std::string tagName);
 
 std::vector<File> GetFiles();
 std::vector<Tag> GetTags();
+
+int createTag(std::string tagName);
+int attachTag(int fileId, int tagId);
+int detachTag(int fileId, int tagId);
 } // namespace logic
 
 #endif

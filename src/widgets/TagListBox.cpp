@@ -3,13 +3,16 @@
 #include <vector>
 #include <wx/msgdlg.h>
 
-TagClientData::TagClientData(logic::Tag tag_arg) { tag = tag_arg; }
+TagClientData::TagClientData(int tag_id_arg) { tag_id = tag_id_arg; }
 
-TagListBox::TagListBox(wxWindow *parent)
-    : wxListBox(parent, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1)) {
+TagListBox::TagListBox(wxWindow *parent, std::vector<logic::Tag> *tags_arg, wxWindowID windowID)
+    : wxListBox(parent, windowID, wxPoint(-1, -1), wxSize(-1, -1)) {
 
-  std::vector<logic::Tag> tags = logic::GetTags();
-  for (int i = 0; i < tags.size(); i++) {
-    this->Append(wxString::FromUTF8(tags[i].name), new TagClientData(tags[i]));
+  tags = tags_arg;
+
+  const int tagsSize = tags->size();
+  for (int i = 0; i < tagsSize; i++) {
+    this->Append(wxString::FromUTF8((*tags)[i].name),
+                 new TagClientData((*tags)[i].id));
   }
 }
