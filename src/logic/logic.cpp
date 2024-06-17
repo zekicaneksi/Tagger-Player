@@ -42,7 +42,7 @@ std::string generateQuestionMarks(int amount, questionMarkType type) {
 
 // -- Utility Functions End --
 
-const std::string dbName = ".tagger.db";
+const std::string dbName = ".tagger_player.db";
 
 std::string dirPath;
 

@@ -1,28 +1,28 @@
-# Hello
+# Tagger Player
 
 ## How it works
 
-Open the app and choose a directory. The app will create a file named `.tagger.db` which is an Sqlite file to store information in the chosen directory. After that, you can tag your files within the directory using the app and all the information will be stored in the created file.
+Open the app and choose a directory. The app will create a file named `.tagger_player.db` which is an SQLite file to store information in the chosen directory. After that, you can tag your files within the directory using the app and all the information will be stored in the created file.
 
-Nix
+### Nix
 
 ```sh
 nix-shell
 ```
 
-Build
+### Build
 
 ```sh
 make
 ```
 
-Run
+### Run
 
 ```sh
 build/main
 ```
 
-## Database Schema
+## Database Schemas
 
 ```sql
 CREATE TABLE file (
