@@ -12,47 +12,76 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   tags = logic::GetTags();
 
   wxPanel *panel = new wxPanel(this, wxID_ANY);
-  wxBoxSizer *mainBox = new wxBoxSizer(wxHORIZONTAL);
-  wxBoxSizer *filesBox = new wxBoxSizer(wxVERTICAL);
-  wxBoxSizer *tagsBox = new wxBoxSizer(wxVERTICAL);
 
-  fileFilterCtrl = new wxTextCtrl(panel, FILE_FILTER_CTRL);
-  fileListBox = new FileListBox(panel, &files, FILE_LISTBOX);
+  // Creating the widgets
   wxStaticText *tagsText = new wxStaticText(panel, wxID_ANY, "Tags");
   wxStaticText *filesText = new wxStaticText(panel, wxID_ANY, "Files");
+  wxStaticText *placeholderText =
+      new wxStaticText(panel, wxID_ANY, "Place holder text");
+  wxStaticText *attachedTagsText =
+      new wxStaticText(panel, wxID_ANY, "Attached Tags");
+  wxStaticText *unattachedTagsText =
+      new wxStaticText(panel, wxID_ANY, "Unattached Tags");
+
+  fileListBox = new FileListBox(panel, &files, FILE_LISTBOX);
   tagListBox = new TagListBox(panel, &tags, TAG_LISTBOX);
+  attachedTagsListBox = new wxListBox(panel, ATTACHED_TAGS_LISTBOX);
+  attachedTagsListBox->Disable();
+  unattachedTagsListBox = new wxListBox(panel, UNATTACHED_TAGS_LISTBOX);
+  unattachedTagsListBox->Disable();
+
+  fileFilterCtrl = new wxTextCtrl(panel, FILE_FILTER_CTRL);
+
   createTagBtn = new wxButton(panel, CREATE_TAG_BTN, wxT("Create Tag"));
   attachTagBtn = new wxButton(panel, ATTACH_TAG_BTN, wxT("Attach Tag"));
   attachTagBtn->Disable();
   detachTagBtn = new wxButton(panel, DETACH_TAG_BTN, wxT("Detach Tag"));
   detachTagBtn->Disable();
 
-  wxStaticText *attachedTagsText =
-      new wxStaticText(panel, wxID_ANY, "Attached Tags");
-  wxStaticText *unattachedTagsText =
-      new wxStaticText(panel, wxID_ANY, "Unattached Tags");
-  attachedTagsListBox = new wxListBox(panel, ATTACHED_TAGS_LISTBOX);
-  attachedTagsListBox->Disable();
-  unattachedTagsListBox = new wxListBox(panel, UNATTACHED_TAGS_LISTBOX);
-  unattachedTagsListBox->Disable();
+  // Creating the layout
+  wxBoxSizer *mainBox = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer *leftSideBox = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer *rightSideBox = new wxBoxSizer(wxVERTICAL);
+  wxPanel *separatorPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition);
 
-  mainBox->Add(filesBox, 1, wxEXPAND);
-  mainBox->Add(tagsBox, 1, wxEXPAND);
+  mainBox->Add(leftSideBox, 1, wxEXPAND | wxBOTTOM | wxRIGHT | wxLEFT, 20);
+  mainBox->Add(separatorPanel, 0, wxEXPAND | wxTOP | wxBOTTOM, 20);
+  mainBox->Add(rightSideBox, 1, wxEXPAND | wxBOTTOM | wxRIGHT | wxLEFT, 20);
 
-  filesBox->Add(filesText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
-  filesBox->Add(fileFilterCtrl, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, 20);
-  filesBox->Add(fileListBox, 3, wxEXPAND | wxALL, 20);
-  filesBox->Add(attachedTagsText, 0, wxALIGN_CENTER_HORIZONTAL);
-  filesBox->Add(attachedTagsListBox, 2, wxEXPAND | wxALL, 20);
-  filesBox->Add(detachTagBtn, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 20);
-  filesBox->Add(unattachedTagsText, 0, wxALIGN_CENTER_HORIZONTAL);
-  filesBox->Add(unattachedTagsListBox, 2, wxEXPAND | wxALL, 20);
-  filesBox->Add(attachTagBtn, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 20);
+  // Left side layout
+  wxBoxSizer *tagAttachBox = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer *attachedTagBox = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer *unattachedTagBox = new wxBoxSizer(wxVERTICAL);
 
-  tagsBox->Add(tagsText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
-  tagsBox->Add(tagListBox, 3, wxEXPAND | wxALL, 20);
-  tagsBox->Add(createTagBtn, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 20);
+  leftSideBox->Add(tagsText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
+  leftSideBox->Add(tagListBox, 1, wxEXPAND | wxTOP | wxBOTTOM, 10);
+  leftSideBox->Add(createTagBtn, 0, wxEXPAND | wxBOTTOM, 10);
+  leftSideBox->Add(filesText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
+  leftSideBox->Add(fileFilterCtrl, 0, wxEXPAND | wxTOP, 10);
+  leftSideBox->Add(fileListBox, 1, wxEXPAND | wxBOTTOM | wxTOP, 10);
 
+  leftSideBox->Add(tagAttachBox, 1, wxEXPAND);
+  tagAttachBox->Add(attachedTagBox, 1, wxEXPAND);
+  tagAttachBox->Add(unattachedTagBox, 1, wxEXPAND);
+
+  attachedTagBox->Add(attachedTagsText, 0, wxALIGN_CENTER_HORIZONTAL | wxBOTTOM,
+                      10);
+  attachedTagBox->Add(attachedTagsListBox, 1, wxEXPAND | wxRIGHT, 10);
+  attachedTagBox->Add(detachTagBtn, 0, wxEXPAND | wxTOP | wxRIGHT, 10);
+
+  unattachedTagBox->Add(unattachedTagsText, 0,
+                        wxALIGN_CENTER_HORIZONTAL | wxBOTTOM, 10);
+  unattachedTagBox->Add(unattachedTagsListBox, 1, wxEXPAND | wxLEFT, 10);
+  unattachedTagBox->Add(attachTagBtn, 0, wxEXPAND | wxTOP | wxLEFT, 10);
+
+  // Right side layout
+  rightSideBox->Add(placeholderText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
+
+  // Styling
+  wxColourDatabase colorDB;
+  separatorPanel->SetBackgroundColour(colorDB.Find(wxT("DARK GREY")));
+
+  // Events
   Connect(CREATE_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
           wxCommandEventHandler(MainFrame::CreateTagBtn));
   Connect(ATTACH_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -72,6 +101,7 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   Connect(FILE_LISTBOX, wxEVT_LISTBOX,
           wxCommandEventHandler(MainFrame::FileListBoxChange));
 
+  // Let's go
   panel->SetSizer(mainBox);
   Center();
   SetMinSize(minAndInitialSize);

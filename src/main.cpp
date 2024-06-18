@@ -23,7 +23,7 @@ bool App::OnInit() {
     return false;
   }
 
-  MainFrame *mainFrame = new MainFrame(wxT("Tagger Player"), wxSize(750, 750));
+  MainFrame *mainFrame = new MainFrame(wxT("Tagger Player"), wxSize(1000, 750));
   mainFrame->Show(true);
 
   return true;
