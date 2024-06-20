@@ -12,6 +12,8 @@ public:
   std::vector<logic::File> files;
   std::vector<logic::Tag> tags;
 
+  std::vector<int> filteredTagIds;
+
   FileListBox *fileListBox;
   TagCheckListBox *tagCheckListBox;
   wxListBox *attachedTagsListBox;
@@ -27,6 +29,7 @@ public:
   void ListBoxChange_State_DetachBtn(wxCommandEvent &event);
   void ListBoxChange_State_AttachBtn(wxCommandEvent &event);
   void FileListBoxChange(wxCommandEvent &event);
+  void TagFilter(wxCommandEvent &event);
 
   void CreateTagBtn(wxCommandEvent &event);
   void AttachTagBtn(wxCommandEvent &event);
@@ -38,7 +41,7 @@ const int CREATE_TAG_BTN = 1;
 const int ATTACH_TAG_BTN = 2;
 const int FILE_FILTER_CTRL = 3;
 const int FILE_LISTBOX = 4;
-const int TAG_LISTBOX = 5;
+const int TAG_LISTCHECKBOX = 5;
 const int ATTACHED_TAGS_LISTBOX = 6;
 const int UNATTACHED_TAGS_LISTBOX = 7;
 const int DETACH_TAG_BTN = 8;

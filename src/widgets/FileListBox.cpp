@@ -11,8 +11,4 @@ FileListBox::FileListBox(wxWindow *parent, std::vector<logic::File> *files_arg,
 
   files = files_arg;
 
-  for (int i = 0; i < files->size(); i++) {
-    this->Append(wxString::FromUTF8((*files)[i].name),
-                 new FileClientData((*files)[i].id));
-  }
 }

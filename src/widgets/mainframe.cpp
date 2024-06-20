@@ -24,7 +24,7 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
       new wxStaticText(panel, wxID_ANY, "Unattached Tags");
 
   fileListBox = new FileListBox(panel, &files, FILE_LISTBOX);
-  tagCheckListBox = new TagCheckListBox(panel, &tags, TAG_LISTBOX);
+  tagCheckListBox = new TagCheckListBox(panel, &tags, TAG_LISTCHECKBOX);
   attachedTagsListBox = new wxListBox(panel, ATTACHED_TAGS_LISTBOX);
   attachedTagsListBox->Disable();
   unattachedTagsListBox = new wxListBox(panel, UNATTACHED_TAGS_LISTBOX);
@@ -82,6 +82,8 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   separatorPanel->SetBackgroundColour(colorDB.Find(wxT("DARK GREY")));
 
   // Events
+  Connect(TAG_LISTCHECKBOX, wxEVT_CHECKLISTBOX,
+          wxCommandEventHandler(MainFrame::TagFilter));
   Connect(CREATE_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
           wxCommandEventHandler(MainFrame::CreateTagBtn));
   Connect(ATTACH_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -102,6 +104,8 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
           wxCommandEventHandler(MainFrame::FileListBoxChange));
 
   // Let's go
+  wxCommandEvent dummyEvent;
+  FileFilterOnTextChange(dummyEvent);
   panel->SetSizer(mainBox);
   Center();
   SetMinSize(minAndInitialSize);
@@ -208,8 +212,10 @@ void MainFrame::DetachTagBtn(wxCommandEvent &event) {
     }
 
     // Detaching the tag is successful
+    //
     // Update
-
+    //
+    // Remove from files[i].tagids
     const int fileTagIdsSize = files[i].tag_ids.size();
     for (int y = 0; y < fileTagIdsSize; y++) {
       if (files[i].tag_ids[y] == selectedTag->tag_id) {
@@ -218,6 +224,7 @@ void MainFrame::DetachTagBtn(wxCommandEvent &event) {
       }
     }
 
+    // Remove from attachedTagsListbox and append to unattachedTagsListbox
     const int tagsSize = tags.size();
     for (int y = 0; y < tagsSize; y++) {
       if (tags[y].id == selectedTag->tag_id) {
@@ -230,6 +237,26 @@ void MainFrame::DetachTagBtn(wxCommandEvent &event) {
       }
     }
 
+    // Remove from listed files if filter doesn't apply anymore
+    const int filteredTagIdsSize = filteredTagIds.size();
+    if (filteredTagIdsSize != 0) {
+      bool tagFound = false;
+      const int filesTagIdsSize = files[i].tag_ids.size();
+      for (int y = 0; y < filteredTagIdsSize; y++) {
+        for (int z = 0; z < filesTagIdsSize; z++) {
+          if (filteredTagIds[y] == files[i].tag_ids[z]) {
+            tagFound = true;
+            break;
+          }
+        }
+        if (tagFound) break;
+      }
+      if (!tagFound) {
+        fileListBox->Delete(fileSel);
+        fileListBox->SetSelection(wxNOT_FOUND);
+      }
+    }
+
     break;
   }
 }
@@ -238,19 +265,49 @@ void MainFrame::FileFilterOnTextChange(wxCommandEvent &event) {
   std::string inputText = std::string(event.GetString().utf8_str());
   fileListBox->Clear();
   int fileCount = files.size();
-  std::vector<std::pair<int, int>> filterMap(fileCount);
+  std::vector<std::pair<int, int>> filterMap;
 
-  for (int i = 0; i < fileCount; i++) {
-    filterMap[i] =
-        std::make_pair(i, levenshteinDistance(inputText, files[i].name));
+  const int filteredTagIdsSize = filteredTagIds.size();
+  if (filteredTagIdsSize == 0) {
+    // If no filters are applied, list all files
+    filterMap.resize(fileCount);
+    for (int i = 0; i < fileCount; i++) {
+      filterMap[i] =
+          std::make_pair(i, levenshteinDistance(inputText, files[i].name));
+    }
+  } else {
+    // Filtering files by filteredTagIds and calculating levenshtein distance
+    for (int i = 0; i < fileCount; i++) {
+
+      // Checking if file has one of the filtered tags
+      bool tagFound = false;
+      const int tagIdsSize = files[i].tag_ids.size();
+      for (int y = 0; y < tagIdsSize; y++) {
+        for (int z = 0; z < filteredTagIdsSize; z++) {
+          if (files[i].tag_ids[y] == filteredTagIds[z]) {
+            tagFound = true;
+            break;
+          }
+          if (tagFound)
+            break;
+        }
+      }
+
+      if (tagFound)
+        filterMap.push_back(
+            std::make_pair(i, levenshteinDistance(inputText, files[i].name)));
+    }
   }
 
+  // Sort levenshtein distance
   std::sort(filterMap.begin(), filterMap.end(),
             [](std::pair<int, int> &left, std::pair<int, int> &right) {
               return left.second < right.second;
             });
 
-  for (int i = 0; i < filterMap.size(); i++) {
+  // Append to files listbox
+  const int filterMapSize = filterMap.size();
+  for (int i = 0; i < filterMapSize; i++) {
     fileListBox->Append(wxString::FromUTF8(files[filterMap[i].first].name),
                         new FileClientData(files[filterMap[i].first].id));
   }
@@ -325,4 +382,27 @@ void MainFrame::FileListBoxChange(wxCommandEvent &event) {
       break;
     }
   }
+}
+
+void MainFrame::TagFilter(wxCommandEvent &event) {
+  int checkedIndex = event.GetInt();
+  bool isChecked = tagCheckListBox->IsChecked(checkedIndex);
+
+  TagClientData *selectedTag = static_cast<TagClientData *>(
+      tagCheckListBox->GetClientObject(checkedIndex));
+
+  if (isChecked) {
+    filteredTagIds.push_back(selectedTag->tag_id);
+  } else {
+    const int filteredTagIdsSize = filteredTagIds.size();
+    for (int i = 0; i < filteredTagIdsSize; i++) {
+      if (filteredTagIds[i] == selectedTag->tag_id) {
+        filteredTagIds.erase(filteredTagIds.begin() + i);
+        break;
+      }
+    }
+  }
+
+  wxCommandEvent dummy;
+  FileFilterOnTextChange(dummy);
 }
