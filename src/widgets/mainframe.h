@@ -2,7 +2,7 @@
 #define MAINFRAME_H
 
 #include "FileListBox.h"
-#include "TagListBox.h"
+#include "TagCheckListBox.h"
 #include <wx/wx.h>
 
 class MainFrame : public wxFrame {
@@ -13,7 +13,7 @@ public:
   std::vector<logic::Tag> tags;
 
   FileListBox *fileListBox;
-  TagListBox *tagListBox;
+  TagCheckListBox *tagCheckListBox;
   wxListBox *attachedTagsListBox;
   wxListBox *unattachedTagsListBox;
 

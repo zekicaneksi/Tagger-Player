@@ -24,7 +24,7 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
       new wxStaticText(panel, wxID_ANY, "Unattached Tags");
 
   fileListBox = new FileListBox(panel, &files, FILE_LISTBOX);
-  tagListBox = new TagListBox(panel, &tags, TAG_LISTBOX);
+  tagCheckListBox = new TagCheckListBox(panel, &tags, TAG_LISTBOX);
   attachedTagsListBox = new wxListBox(panel, ATTACHED_TAGS_LISTBOX);
   attachedTagsListBox->Disable();
   unattachedTagsListBox = new wxListBox(panel, UNATTACHED_TAGS_LISTBOX);
@@ -54,7 +54,7 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   wxBoxSizer *unattachedTagBox = new wxBoxSizer(wxVERTICAL);
 
   leftSideBox->Add(tagsText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
-  leftSideBox->Add(tagListBox, 1, wxEXPAND | wxTOP | wxBOTTOM, 10);
+  leftSideBox->Add(tagCheckListBox, 1, wxEXPAND | wxTOP | wxBOTTOM, 10);
   leftSideBox->Add(createTagBtn, 0, wxEXPAND | wxBOTTOM, 10);
   leftSideBox->Add(filesText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
   leftSideBox->Add(fileFilterCtrl, 0, wxEXPAND | wxTOP, 10);
@@ -135,7 +135,7 @@ void MainFrame::CreateTagBtn(wxCommandEvent &event) {
 
   // Updating
   tags.push_back(logic::Tag{insertedId, newTagNameUtf8});
-  tagListBox->Append(newTagName, new TagClientData(insertedId));
+  tagCheckListBox->Append(newTagName, new TagClientData(insertedId));
   if (fileListBox->GetSelection() != wxNOT_FOUND) {
     unattachedTagsListBox->Append(newTagName, new TagClientData{insertedId});
   }
