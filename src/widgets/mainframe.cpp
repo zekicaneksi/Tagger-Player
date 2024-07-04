@@ -33,6 +33,10 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   fileFilterCtrl = new wxTextCtrl(panel, FILE_FILTER_CTRL);
 
   createTagBtn = new wxButton(panel, CREATE_TAG_BTN, wxT("Create Tag"));
+  deleteTagBtn = new wxButton(panel, DELETE_TAG_BTN, wxT("Delete Tag"));
+  deleteTagBtn->Disable();
+  renameTagBtn = new wxButton(panel, RENAME_TAG_BTN, wxT("Rename Tag"));
+  renameTagBtn->Disable();
   attachTagBtn = new wxButton(panel, ATTACH_TAG_BTN, wxT("Attach Tag"));
   attachTagBtn->Disable();
   detachTagBtn = new wxButton(panel, DETACH_TAG_BTN, wxT("Detach Tag"));
@@ -49,13 +53,18 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   mainBox->Add(rightSideBox, 1, wxEXPAND | wxBOTTOM | wxRIGHT | wxLEFT, 20);
 
   // Left side layout
+  wxBoxSizer *tagOperationsBox = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer *tagAttachBox = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer *attachedTagBox = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *unattachedTagBox = new wxBoxSizer(wxVERTICAL);
 
+  tagOperationsBox->Add(deleteTagBtn, 1, wxEXPAND | wxRIGHT, 5);
+  tagOperationsBox->Add(renameTagBtn, 1, wxEXPAND | wxLEFT, 5);
+
   leftSideBox->Add(tagsText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
   leftSideBox->Add(tagCheckListBox, 1, wxEXPAND | wxTOP | wxBOTTOM, 10);
   leftSideBox->Add(createTagBtn, 0, wxEXPAND | wxBOTTOM, 10);
+  leftSideBox->Add(tagOperationsBox, 0, wxEXPAND | wxBOTTOM, 10);
   leftSideBox->Add(filesText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 10);
   leftSideBox->Add(fileFilterCtrl, 0, wxEXPAND | wxTOP, 10);
   leftSideBox->Add(fileListBox, 1, wxEXPAND | wxBOTTOM | wxTOP, 10);
@@ -82,10 +91,16 @@ MainFrame::MainFrame(const wxString &title, wxSize minAndInitialSize)
   separatorPanel->SetBackgroundColour(colorDB.Find(wxT("DARK GREY")));
 
   // Events
+  Connect(TAG_LISTCHECKBOX, wxEVT_LISTBOX,
+          wxCommandEventHandler(MainFrame::TagCheckListBoxChange));
   Connect(TAG_LISTCHECKBOX, wxEVT_CHECKLISTBOX,
           wxCommandEventHandler(MainFrame::TagFilter));
   Connect(CREATE_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
           wxCommandEventHandler(MainFrame::CreateTagBtn));
+  Connect(DELETE_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
+          wxCommandEventHandler(MainFrame::DeleteTagBtn));
+  Connect(RENAME_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
+          wxCommandEventHandler(MainFrame::RenameTagBtn));
   Connect(ATTACH_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
           wxCommandEventHandler(MainFrame::AttachTagBtn));
   Connect(DETACH_TAG_BTN, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -143,6 +158,54 @@ void MainFrame::CreateTagBtn(wxCommandEvent &event) {
   if (fileListBox->GetSelection() != wxNOT_FOUND) {
     unattachedTagsListBox->Append(newTagName, new TagClientData{insertedId});
   }
+}
+
+void MainFrame::DeleteTagBtn(wxCommandEvent &event) {
+  int tagSel = tagCheckListBox->GetSelection();
+
+  TagClientData *selectedTag =
+      static_cast<TagClientData *>(tagCheckListBox->GetClientObject(tagSel));
+
+  logic::Tag *tag;
+  int tagsSize = tags.size();
+  for (int i = 0; i < tagsSize; i++) {
+    if (tags[i].id == selectedTag->tag_id) {
+      tag = &(tags[i]);
+      break;
+    }
+  }
+
+  wxMessageDialog *dialog = new wxMessageDialog(
+      NULL, wxT("Do you want to delete tag " + tag->name + "?"),
+      wxT("Delete Tag"),
+      wxYES_NO | wxNO_DEFAULT | wxCENTRE | wxICON_EXCLAMATION);
+  int decision = dialog->ShowModal();
+
+  if (decision == wxID_OK) {
+    // Delete
+  }
+}
+
+void MainFrame::RenameTagBtn(wxCommandEvent &event) {
+  wxString newTagName =
+      wxGetTextFromUser(wxT("New tag name"), wxT("Rename Tag"));
+  std::string newTagNameUtf8 = std::string(newTagName.utf8_str());
+
+  if (newTagName.Len() == 0)
+    return;
+
+  // Checking if a tag with same name exists
+  const int tagsSize = tags.size();
+  for (int i = 0; i < tagsSize; i++) {
+    if (tags[i].name == newTagNameUtf8) {
+      wxString Msg;
+      Msg.Printf(wxT("Tag with the name: %s\nalready exists."), newTagName);
+      wxMessageBox(Msg);
+      return;
+    }
+  }
+
+  // Rename...
 }
 
 void MainFrame::AttachTagBtn(wxCommandEvent &event) {
@@ -249,7 +312,8 @@ void MainFrame::DetachTagBtn(wxCommandEvent &event) {
             break;
           }
         }
-        if (tagFound) break;
+        if (tagFound)
+          break;
       }
       if (!tagFound) {
         fileListBox->Delete(fileSel);
@@ -405,4 +469,16 @@ void MainFrame::TagFilter(wxCommandEvent &event) {
 
   wxCommandEvent dummy;
   FileFilterOnTextChange(dummy);
+}
+
+void MainFrame::TagCheckListBoxChange(wxCommandEvent &event) {
+  int tagSel = tagCheckListBox->GetSelection();
+  if (tagSel == wxNOT_FOUND) {
+    deleteTagBtn->Disable();
+    renameTagBtn->Disable();
+    return;
+  } else {
+    deleteTagBtn->Enable();
+    renameTagBtn->Enable();
+  }
 }

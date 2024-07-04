@@ -22,6 +22,8 @@ public:
   wxTextCtrl *fileFilterCtrl;
 
   wxButton *createTagBtn;
+  wxButton *deleteTagBtn;
+  wxButton *renameTagBtn;
   wxButton *attachTagBtn;
   wxButton *detachTagBtn;
 
@@ -29,9 +31,12 @@ public:
   void ListBoxChange_State_DetachBtn(wxCommandEvent &event);
   void ListBoxChange_State_AttachBtn(wxCommandEvent &event);
   void FileListBoxChange(wxCommandEvent &event);
+  void TagCheckListBoxChange(wxCommandEvent &event);
   void TagFilter(wxCommandEvent &event);
 
   void CreateTagBtn(wxCommandEvent &event);
+  void DeleteTagBtn(wxCommandEvent &event);
+  void RenameTagBtn(wxCommandEvent &event);
   void AttachTagBtn(wxCommandEvent &event);
   void DetachTagBtn(wxCommandEvent &event);
 };
@@ -45,5 +50,7 @@ const int TAG_LISTCHECKBOX = 5;
 const int ATTACHED_TAGS_LISTBOX = 6;
 const int UNATTACHED_TAGS_LISTBOX = 7;
 const int DETACH_TAG_BTN = 8;
+const int DELETE_TAG_BTN = 9;
+const int RENAME_TAG_BTN = 10;
 
 #endif
