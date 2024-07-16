@@ -213,8 +213,10 @@ void MainFrame::DeleteTagBtn(wxCommandEvent &event) {
 
     // Remove the tag from TagCheckListBox
     tagCheckListBox->Delete(tagSel);
+    tagCheckListBox->SetSelection(wxNOT_FOUND);
 
     wxCommandEvent dummy;
+    TagCheckListBoxChange(dummy);
     FileListBoxChange(dummy);
   }
 }
