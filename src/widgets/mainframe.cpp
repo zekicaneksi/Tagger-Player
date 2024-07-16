@@ -149,7 +149,8 @@ void MainFrame::CreateTagBtn(wxCommandEvent &event) {
   if (insertedId == -1) {
     wxMessageBox(
         wxT("Failed to insert into database, check console! Quitting..."));
-    Close(true);
+    Close();
+    return;
   }
 
   // Updating
@@ -181,8 +182,40 @@ void MainFrame::DeleteTagBtn(wxCommandEvent &event) {
       wxYES_NO | wxNO_DEFAULT | wxCENTRE | wxICON_EXCLAMATION);
   int decision = dialog->ShowModal();
 
-  if (decision == wxID_OK) {
-    // Delete
+  if (decision == wxID_YES) {
+    if (logic::deleteTag(tag->id) != 0) {
+      wxMessageBox("Deleting the tag failed, check console. Closing...");
+      Close();
+      return;
+    }
+
+    // -- Update UI Stuff
+    // Remove the tag from tags Array
+    const int tagsSize = tags.size();
+    for (int i = 0; i < tagsSize; i++) {
+      if (tags[i].id == tag->id) {
+        tags.erase(tags.begin() + i);
+        break;
+      }
+    }
+
+    // Remove the tag from each file's attached tag_ids array
+    const int filesSize = files.size();
+    for (int i = 0; i < filesSize; i++) {
+      const int tagIdsSize = files[i].tag_ids.size();
+      for (int y = 0; y < tagIdsSize; y++) {
+        if (files[i].tag_ids[y] == tag->id) {
+          files[i].tag_ids.erase(files[i].tag_ids.begin() + y);
+          break;
+        }
+      }
+    }
+
+    // Remove the tag from TagCheckListBox
+    tagCheckListBox->Delete(tagSel);
+
+    wxCommandEvent dummy;
+    FileListBoxChange(dummy);
   }
 }
 
@@ -229,6 +262,7 @@ void MainFrame::AttachTagBtn(wxCommandEvent &event) {
     if (logic::attachTag(files[i].id, selectedTag->tag_id) != 0) {
       wxMessageBox("Inserting failed, check console. Closing...");
       Close();
+      return;
     }
 
     // Attaching the tag is successful
@@ -272,6 +306,7 @@ void MainFrame::DetachTagBtn(wxCommandEvent &event) {
     if (logic::detachTag(files[i].id, selectedTag->tag_id) != 0) {
       wxMessageBox("Inserting failed, check console. Closing...");
       Close();
+      return;
     }
 
     // Detaching the tag is successful

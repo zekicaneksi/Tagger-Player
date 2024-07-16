@@ -28,6 +28,7 @@ std::vector<Tag> GetTags();
 int createTag(std::string tagName);
 int attachTag(int fileId, int tagId);
 int detachTag(int fileId, int tagId);
+int deleteTag(int tagId);
 } // namespace logic
 
 #endif

@@ -67,6 +67,16 @@ int initDB() {
     return (1);
   }
 
+  // Enable Foreign Key Support
+  const std::string foreignKeySupport = "PRAGMA foreign_keys=ON";
+  rc = sqlite3_exec(db, foreignKeySupport.c_str(), NULL, 0, &zErrMsg);
+  if (rc != SQLITE_OK) {
+    std::cerr << "SQL error: " + std::string(zErrMsg) << std::endl;
+    sqlite3_free(zErrMsg);
+    sqlite3_close(db);
+    return 1;
+  }
+
   // -- Creating Database Tables If Not Exists --
   //
   std::string query_tableCreate = R"(
@@ -81,8 +91,8 @@ int initDB() {
         CREATE TABLE IF NOT EXISTS file_tag (
             file_id INT NOT NULL,
             tag_id INT NOT NULL,
-            FOREIGN KEY(file_id) REFERENCES file(id),
-            FOREIGN KEY(tag_id) REFERENCES tag(id),
+            FOREIGN KEY(file_id) REFERENCES file(id) ON DELETE CASCADE,
+            FOREIGN KEY(tag_id) REFERENCES tag(id) ON DELETE CASCADE,
             UNIQUE(file_id, tag_id)
         );
     )";
@@ -336,6 +346,26 @@ int detachTag(int fileId, int tagId) {
   if (rc != 101) {
     std::cerr << "Deleting from file_tag from db failed, last result code: "
               << rc << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
+int deleteTag(int tagId) {
+  const std::string sqlDeleteQuery = "DELETE FROM tag WHERE id = ?;";
+
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(db, sqlDeleteQuery.c_str(), sqlDeleteQuery.length(), &stmt,
+                     nullptr);
+  sqlite3_bind_int(stmt, 1, tagId);
+
+  int rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  if (rc != 101) {
+    std::cerr << "Deleting tag from db failed, last result code: " << rc
+              << std::endl;
     return 1;
   }
 
