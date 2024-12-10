@@ -372,4 +372,25 @@ int deleteTag(int tagId) {
   return 0;
 }
 
+int renameTag(int tagId, std::string newTag) {
+  const std::string sqlRenameQuery = "UPDATE tag SET name = ? WHERE id = ?;";
+  
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(db, sqlRenameQuery.c_str(), sqlRenameQuery.length(), &stmt,
+                     nullptr);
+  sqlite3_bind_text(stmt, 1, newTag.c_str(), newTag.length(), SQLITE_STATIC); 
+  sqlite3_bind_int(stmt, 2, tagId);
+
+  int rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  if (rc != 101) {
+    std::cerr << "Renaming tag from db failed, last result code: " << rc
+              << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
 } // namespace logic

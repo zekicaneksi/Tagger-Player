@@ -29,6 +29,7 @@ int createTag(std::string tagName);
 int attachTag(int fileId, int tagId);
 int detachTag(int fileId, int tagId);
 int deleteTag(int tagId);
+int renameTag(int tagId, std::string newTag);
 } // namespace logic
 
 #endif

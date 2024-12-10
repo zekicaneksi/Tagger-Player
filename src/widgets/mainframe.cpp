@@ -240,7 +240,31 @@ void MainFrame::RenameTagBtn(wxCommandEvent &event) {
     }
   }
 
-  // Rename...
+  int tagSel = tagCheckListBox->GetSelection();
+
+  TagClientData *selectedTag = static_cast<TagClientData *>(
+      tagCheckListBox->GetClientObject(tagSel));
+
+  // Rename the tag
+  if (logic::renameTag(selectedTag->tag_id, newTagNameUtf8) != 0) {
+    wxMessageBox("Renaming tag failed, check console. Closing...");
+    Close();
+    return;
+  }
+
+  // -- Updating UI
+  const int selectedTagId = selectedTag->tag_id; // to not dereference many times in the loop
+  for (int i = 0; i < tagsSize; i++) {
+    if (tags[i].id == selectedTagId) {
+        tags[i].name = newTagNameUtf8;
+        break;
+    }
+  }
+
+  tagCheckListBox->SetString(tagSel, newTagName);
+
+  wxCommandEvent dummy;
+  FileListBoxChange(dummy);
 }
 
 void MainFrame::AttachTagBtn(wxCommandEvent &event) {
