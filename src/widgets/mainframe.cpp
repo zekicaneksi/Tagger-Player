@@ -211,11 +211,21 @@ void MainFrame::DeleteTagBtn(wxCommandEvent &event) {
       }
     }
 
+    // Remove the tag from filteredTagIds
+    const int filteredTagIdsSize = filteredTagIds.size();
+    for (int i = 0; i < filteredTagIdsSize; i++) {
+      if (filteredTagIds[i] == selectedTag->tag_id) {
+        filteredTagIds.erase(filteredTagIds.begin() + i);
+        break;
+      }
+    }
+
     // Remove the tag from TagCheckListBox
     tagCheckListBox->Delete(tagSel);
     tagCheckListBox->SetSelection(wxNOT_FOUND);
 
     wxCommandEvent dummy;
+    FileFilterOnTextChange(dummy);
     TagCheckListBoxChange(dummy);
     FileListBoxChange(dummy);
   }
