@@ -2,9 +2,13 @@
 
 ## Setting up the Backend
 
+### Requirements
+
+- Golang
+
 ### Install Dependencies
 
-```go
+```sh
 go mod download
 ```
 
@@ -19,7 +23,7 @@ GIN_MODE
 
 ### Run
 
-```go
+```sh
 go run .
 ```
 
@@ -27,6 +31,6 @@ go run .
 
 To produce the executable
 
-```go
+```sh
 go build .
 ```

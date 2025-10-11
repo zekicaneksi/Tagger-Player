@@ -9,7 +9,9 @@ Works in Linux/Windows. Most likely works in Mac as well though haven't been tes
 
 - Electron
 - React
+- TypeScript
 - Tailwind CSS
+- PostCSS
 
 ### Backend
 
