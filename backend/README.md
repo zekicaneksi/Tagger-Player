@@ -2,7 +2,7 @@
 
 ## Setting up the Backend
 
-### Install dependencies
+### Install Dependencies
 
 ```go
 go mod download
