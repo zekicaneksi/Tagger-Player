@@ -1,6 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
+import FolderIcon from './asset/icon/folder-open.svg';
+
 let SelectDirectory = () => {
     window.electronAPI.SelectDirectory().then( (path : void): void | PromiseLike<void> => {
         console.log(path)
@@ -18,7 +20,10 @@ root.render(
         <div className="flex flex-col items-center justify-center">
             <h1 className="text-[#d85630] font-bold">Welcome!</h1>
             <p className="text-[#d85630]">Please select your music directory</p>
-            <button onClick={SelectDirectory}>click me</button>
+            <FolderIcon
+                className="w-16 h-auto fill-amber-500 hover:fill-amber-300 transition-colors duration-1000 cursor-pointer"
+                onClick={SelectDirectory}
+            />
         </div>
     </div>
 );

@@ -34,5 +34,10 @@ export const rules: Required<ModuleOptions>['rules'] = [
         test: /\.css$/,
         include: [path.resolve(__dirname, "app/src")],
         use: ["style-loader", "css-loader", "postcss-loader"],
-    }
+    },
+    {
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/, // ensures it only applies to JS/TS files
+        use: ['@svgr/webpack'],
+    },
 ];
