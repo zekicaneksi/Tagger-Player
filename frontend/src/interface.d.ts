@@ -1,5 +1,5 @@
 export interface IElectronAPI {
-  SelectDirectory: () => Promise<void>,
+  SelectDirectory: () => Promise<undefined | string>,
 }
 
 declare global {
