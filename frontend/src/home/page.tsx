@@ -6,13 +6,13 @@ import App from "./App";
 
 const Page = () => {
 
-    const [location, setLocation] = useState<string | null>(null);
+    const [locationUuid, setLocationUuid] = useState<string | null>(null);
 
     return(
         <>
-        {location
-            ? <App />
-            : <PickLocation setLocation={setLocation}/> 
+        {locationUuid
+            ? <App locationUuid={locationUuid}/>
+            : <PickLocation setLocationUuid={setLocationUuid}/> 
         }
         </>
     ) 

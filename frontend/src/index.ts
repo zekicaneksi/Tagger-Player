@@ -13,6 +13,30 @@ if (require('electron-squirrel-startup')) {
 // To prevent kWallet to delay launch by about a minute in KDE Plasma. No password is required throughout the app anyway.
 app.commandLine.appendSwitch('password-store', 'basic');
 
+function showErrorWindow(message: string) {
+    const errorWindow = new BrowserWindow({
+        height: 600,
+        width: 800,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        title: 'Startup Error',
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: false,
+        }
+    });
+
+    // Load a simple HTML page showing the error
+    errorWindow.loadURL(`data:text/html,
+                        <html>
+                        <head><title>Error</title></head>
+                        <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;">
+                        <h2>${message}</h2>
+                        </body>
+                        </html>`);
+}
+
 const createWindow = (): void => {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
@@ -34,6 +58,39 @@ const createWindow = (): void => {
         }
     })
 
+    ipcMain.handle(
+        "api-request",
+        async (
+            event,
+            args: {
+                path: string;
+                method: "GET" | "POST" | "PUT" | "DELETE";
+                body?: any;
+                headers?: Record<string, string>;
+            }
+        ) => {
+            try {
+                const response = await fetch(process.env.TAGGER_PLAYER_BACKEND_ADDRESS + args.path, {
+                    method: args.method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(args.headers || {}),
+                    },
+                    body: args.body ? JSON.stringify(args.body) : undefined,
+                });
+
+                const result = await response.json().catch(() => null); // Handle empty response
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: result,
+                };
+            } catch (error: any) {
+                return { success: false, error: error.message };
+            }
+        }
+    );
+
     // and load the index.html of the app.
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
@@ -44,7 +101,14 @@ const createWindow = (): void => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+    if (!process.env.TAGGER_PLAYER_BACKEND_ADDRESS) {
+        showErrorWindow('The application cannot start because TAGGER_PLAYER_BACKEND_ADDRESS is not set.');
+        return;
+    }
+
+    createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

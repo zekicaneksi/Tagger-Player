@@ -27,14 +27,14 @@ func SetUpRoutes(r *gin.Engine) error {
 			return
 		}
 
-		err, uuid := session.SetSession(pickPathInput.Path)
+		err, uuid := session.SetSession(pickPathInput.Path + "/.tagger_player")
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Something went wrong, please make contact.")
 			fmt.Println(err)
 			return
 		}
 
-		c.String(http.StatusOK, uuid)
+		c.JSON(http.StatusOK, gin.H{"uuid": uuid})
 	})
 
 	return nil

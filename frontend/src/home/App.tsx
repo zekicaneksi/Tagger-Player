@@ -1,9 +1,13 @@
 import React from 'react';
 
-const App = () => {
+interface props {
+    locationUuid: string
+}
+
+const App = (props: props) => {
     return (
         <div>
-        <p>Hello from app</p>
+        <p>Hello from app, uuid is: {props.locationUuid}</p>
         </div>
     )
 }

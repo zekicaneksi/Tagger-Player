@@ -13,6 +13,14 @@
 npm install
 ```
 
+### Environment Variables
+
+```env
+TAGGER_PLAYER_BACKEND_ADDRESS
+// The address of the backend. Required. example;
+// TAGGER_PLAYER_BACKEND_ADDRESS=http://localhost:4001
+```
+
 ### Development
 
 ```sh

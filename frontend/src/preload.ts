@@ -4,5 +4,11 @@
 import {contextBridge, ipcRenderer} from 'electron'
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    SelectDirectory: () => ipcRenderer.invoke('dialog:openDirectory')
+    SelectDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
+    ApiRequest: (args: {
+        path: string;
+        method: "GET" | "POST" | "PUT" | "DELETE";
+        body?: any;
+        headers?: Record<string, string>;
+    }) => ipcRenderer.invoke("api-request", args),
 })
