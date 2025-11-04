@@ -1,5 +1,7 @@
 # Tagger-Player
-An Electron / Go app that ables you to tag your music files and make playlists out of them. It keeps the tag information in the directory with a hidden file named `.tagger_player`.
+An Electron / Go app that ables you to tag your music files and make playlists out of them.
+
+It keeps the tag information in directories with a hidden file named `.tagger_player`.
 
 Works in Linux/Windows. Most likely works in Mac as well though haven't been tested.
 
