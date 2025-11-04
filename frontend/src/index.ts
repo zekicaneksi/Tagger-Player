@@ -20,7 +20,7 @@ function showErrorWindow(message: string) {
         resizable: false,
         minimizable: false,
         maximizable: false,
-        title: 'Startup Error',
+        title: 'Tagger Player Startup Error',
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: false,
