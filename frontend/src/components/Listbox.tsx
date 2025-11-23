@@ -1,7 +1,6 @@
 import React from 'react';
 import { useState, SetStateAction } from 'react';
 
-
 interface listboxElemProps {
     index: number;
     text: string;

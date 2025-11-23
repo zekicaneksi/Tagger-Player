@@ -11,4 +11,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
         body?: any;
         headers?: Record<string, string>;
     }) => ipcRenderer.invoke("api-request", args),
+    quitApp: () => ipcRenderer.send('quit-app'),
 })

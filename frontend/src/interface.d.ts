@@ -5,7 +5,8 @@ export interface IElectronAPI {
         method: "GET" | "POST" | "PUT" | "DELETE";
         body?: any;
         headers?: Record<string, string>;
-    }) => Promise<{ success: boolean; status?: number; data?: any; error?: string }>;
+    }) => Promise<{ success: boolean; status?: number; data?: any; error?: string }>,
+    quitApp: () => void;
 }
 
 declare global {

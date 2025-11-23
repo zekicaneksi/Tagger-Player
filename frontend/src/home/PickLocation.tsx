@@ -33,7 +33,7 @@ const Page = (props: props) => {
                         setErrMsg("Problem reaching the backend. Make sure it is running and accessible.")
                     }
                     else {
-                        setErrMsg(response.status + ": " + response.error);
+                        setErrMsg(response.status + ": " + response.data.error);
                     }
                     setLoading(false);
                 }

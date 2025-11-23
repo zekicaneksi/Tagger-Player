@@ -19,7 +19,7 @@ interface props {
 
 const Loading = (props:props) => {
     return(
-        <div className={`${props.loading ? "pointer-events-none opacity-[.4]" : null}`}>
+        <div className={`${props.loading ? "w-full h-full z-40 absolute pointer-events-none opacity-[.4]" : null}`}>
         {props.children}
         {props.loading && <Spinner />}
         </div>

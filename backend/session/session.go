@@ -6,8 +6,6 @@ import (
 	"errors"
 	"database/sql"
 
-	"tagger_player/db_operations"
-
 	"github.com/google/uuid"
 	_ "modernc.org/sqlite"
 )
@@ -23,23 +21,15 @@ var (
 )
 
 
-func SetSession(path string) (error, string) {
+func SetSession(path string) (string, error) {
 	mu_activeSessions.Lock()
 	defer mu_activeSessions.Unlock()
 
 	if len(activeSessions) >= 100 {
-		return errors.New("Not setting session beucase of memory clogging concern"), ""
+		return "", errors.New("Not setting session beucase of memory clogging concern")
 	}
 
-	// Check if the path already exists, and if so delete the key-value (we don't want multiple handles to the same sql file)
-	for k, v := range activeSessions {
-		if v.Path == path {
-			activeSessions[k].DbHandle.Close();
-			delete(activeSessions, k);
-			break
-		}
-	}
-
+	// Create uuid
 	var id string
 
 	for i := 0; i < 10; i++ {
@@ -51,7 +41,17 @@ func SetSession(path string) (error, string) {
 		}
 
 		if i == 9 {
-			return errors.New("Something is wrong with uuid creation"), ""
+			return "", errors.New("Something is wrong with uuid creation")
+		}
+	}
+
+	// Check if the path already exists, meaning someone already has opened the file
+	// and if so, (effectively) replace the uuid and return
+	for k, v := range activeSessions {
+		if v.Path == path {
+			activeSessions[id] = Session{Path: path, DbHandle: v.DbHandle}
+			delete(activeSessions, k);
+			return id, nil
 		}
 	}
 
@@ -59,27 +59,23 @@ func SetSession(path string) (error, string) {
 	// I don't know why it gives such a weird error description.
 	dbHandle, err := sql.Open("sqlite", path)
 	if err != nil {
-		return fmt.Errorf("Error when creating/opening the sqlite file: %w", err), ""
-	}
-
-	if err := db_operations.CreateInitialTables(dbHandle); err != nil {
-		return fmt.Errorf("Error when creating the initial tables: %w", err), ""
+		return "", fmt.Errorf("Error when creating/opening the sqlite file: %w", err)
 	}
 
 	activeSessions[id] = Session{Path: path, DbHandle: dbHandle}	
 
-	return nil, id
+	return id, nil
 }
 
-func GetSessionDbHandle(uuid string) (error, *sql.DB) {
+func GetSessionDbHandle(uuid string) (*sql.DB, error) {
 	mu_activeSessions.Lock()
 	defer mu_activeSessions.Unlock()
 
 	if _, exists := activeSessions[uuid]; exists == false {
-		return errors.New("uuid doesn't exist"), nil
+		return nil, errors.New("uuid doesn't exist")
 	}
 
-	return nil, activeSessions[uuid].DbHandle
+	return activeSessions[uuid].DbHandle, nil
 }
 
 func EndAllSessions() {
